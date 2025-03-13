@@ -49,7 +49,7 @@ export const fileUploader = multer({
   dest: destpath,
   fileFilter: (req, file, cb) => {
     const mime = file.mimetype;
-    console.log("File", file);
+
     const ext = file.originalname.split(".")[1];
     if (!mime || !ext) {
       console.warn("No mime or ext", mime, ext);
