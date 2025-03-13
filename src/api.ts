@@ -106,3 +106,48 @@ srv.delete("/:taskId", async (req, res) => {
     task: deleteRes.value,
   });
 });
+
+srv.put("/", fileUploader.single("file"), async (req, res) => {
+  if (!req.file) {
+    res.send({
+      status: HttpStatus.ServerError,
+      message: `File was not uploaded`,
+    });
+    return;
+  }
+  const body = req.body;
+  const validationRes = await validateSchema<CreateTaskDto>(CreateTaskDtoSchema, body);
+  if (validationRes.isErr()) {
+    const { type, issues } = validationRes.error;
+    res.status(HttpStatus.ValidationError).send({
+      status: HttpStatus.ValidationError,
+      type,
+      issues,
+    });
+
+    return;
+  }
+
+  const data = validationRes.value;
+  if (data.type !== "file") data.type = "file";
+  data.input = req.file.filename;
+  console.log("Creating task", req.file, data);
+
+  const createRes = await taskSvc.createTask(data);
+  if (createRes.isErr()) {
+    const { type, message } = createRes.error;
+    res.status(HttpStatus.ServerError).send({
+      status: HttpStatus.ServerError,
+      type,
+      message,
+    });
+
+    return;
+  }
+
+  const task = createRes.value;
+  res.status(HttpStatus.Ok).send({
+    status: HttpStatus.Ok,
+    task,
+  });
+});
