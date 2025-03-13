@@ -100,7 +100,7 @@ export class SqliteEngine implements DatabaseEngine {
 
     const oldDoc = docRes.value;
     const newDoc: Document = {
-      ...oldDoc,
+      ...oldDoc.value,
       ...updates,
     };
 

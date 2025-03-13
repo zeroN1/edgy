@@ -29,7 +29,7 @@ export type CreateTaskDto = {
 export type Task = {
   id: string;
   processed: boolean;
-  status: "successful" | "failed" | "todo";
+  status: "successful" | "failed" | "todo" | "inprogress";
   lastAttempted?: string;
   result: string;
 } & CreateTaskDto;

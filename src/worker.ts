@@ -52,8 +52,6 @@ process.on("message", async (task: Task) => {
 
     process.send!({ id: task.id, success: true, value: context.result } as TaskInfo);
   } catch (e) {
-    if (e instanceof Error && e.message === "Timeout!") {
-      process.send!({ id: task.id, success: false, value: context.result } as TaskInfo);
-    }
+    process.send!({ id: task.id, success: false, value: context.result } as TaskInfo);
   }
 });
