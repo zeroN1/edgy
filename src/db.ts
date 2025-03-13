@@ -92,7 +92,7 @@ export class SqliteEngine implements DatabaseEngine {
     }
   }
 
-  async update(id: string, updates: any): Promise<Result<Document, DatabaseError>> {
+  async update(id: string, updates: Partial<Omit<Task, "id">>): Promise<Result<Document, DatabaseError>> {
     const docRes = await this.get(id);
     if (docRes.isErr()) {
       return err(docRes.error);
@@ -100,7 +100,7 @@ export class SqliteEngine implements DatabaseEngine {
 
     const oldDoc = docRes.value;
     const newDoc: Document = {
-      ...oldDoc,
+      ...oldDoc.value,
       ...updates,
     };
 
