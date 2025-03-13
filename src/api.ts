@@ -151,3 +151,20 @@ srv.put("/", fileUploader.single("file"), async (req, res) => {
     task,
   });
 });
+
+async function main() {
+  console.log("Starting server");
+  srv.listen(PORT, HOST, async (err) => {
+    if (err) {
+      console.error(err);
+      console.log("Stopping server");
+      return process.exit(1);
+    }
+    console.log(`Server started on ${HOST}:${PORT}\n`);
+  });
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
