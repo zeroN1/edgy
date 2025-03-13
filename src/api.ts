@@ -4,6 +4,8 @@ import { HttpStatus, fileUploader, validateSchema } from "./utils";
 import { CreateTaskDto, CreateTaskDtoSchema } from "./schema";
 import { SqliteEngine } from "./db";
 import { TaskService } from "./task";
+import path from "path";
+import { existsSync, unlinkSync } from "fs";
 
 const srv = express();
 const db = new SqliteEngine();
@@ -72,5 +74,35 @@ srv.get("/:taskId", async (req, res) => {
   res.status(HttpStatus.Ok).send({
     status: HttpStatus.Ok,
     task,
+  });
+});
+
+srv.delete("/:taskId", async (req, res) => {
+  const id = req.params.taskId;
+  console.log(`Deleting task ${id}`);
+
+  const deleteRes = await taskSvc.deleteTask(id);
+  if (deleteRes.isErr()) {
+    const { message, type } = deleteRes.error;
+    res.status(HttpStatus.ServerError).send({
+      status: HttpStatus.ServerError,
+      type,
+      message,
+    });
+
+    return;
+  }
+
+  const task = deleteRes.value;
+  const fp = path.resolve("./data".concat(task.input));
+
+  if (existsSync(fp)) {
+    console.log(`Deleting file @ ${fp}`);
+    unlinkSync(fp);
+  }
+
+  res.status(HttpStatus.Ok).send({
+    status: HttpStatus.Ok,
+    task: deleteRes.value,
   });
 });
