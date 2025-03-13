@@ -47,3 +47,30 @@ srv.post("/", async (req, res) => {
     task: createRes.value,
   });
 });
+
+srv.get("/:taskId", async (req, res) => {
+  const id = req.params.taskId;
+  console.log(`Getting task ${id}`);
+
+  const getRes = await taskSvc.getTask(id);
+  if (getRes.isErr()) {
+    const { type, message } = getRes.error;
+    let status;
+    if (type === "read-error") {
+      status = HttpStatus.NotFound;
+    } else status = HttpStatus.ServerError;
+
+    res.status(status).send({
+      status,
+      message,
+    });
+
+    return;
+  }
+
+  const task = getRes.value;
+  res.status(HttpStatus.Ok).send({
+    status: HttpStatus.Ok,
+    task,
+  });
+});
