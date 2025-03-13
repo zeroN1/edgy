@@ -3,6 +3,7 @@ node_modules/
 # Data directories
 db/
 data/
+dist/
 
 # log files
 *dbg*.log
