@@ -1,0 +1,8 @@
+node_modules/
+
+# Data directories
+db/
+data/
+
+# log files
+*dbg*.log
