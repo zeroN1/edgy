@@ -14,15 +14,46 @@ const context = {
 
 vm.createContext(context, {});
 
-process.on("message", (task: Task) => {
+const RuntimeTimeout = new Promise<void>((_, reject) => setTimeout(() => reject(new Error("Timeout!")), 10_000));
+
+process.on("message", async (task: Task) => {
   console.log("Worker processing task ", task);
 
-  const { input, type } = task;
-  if (type === "code") vm.runInContext(input, context);
-  else {
-    const code = fs.readFileSync(resolve("./data/", input), { encoding: "utf-8", flag: "r" });
-    vm.runInContext(code, context);
-  }
+  try {
+    const { input, type } = task;
+    if (type === "code") {
+      await Promise.race([
+        new Promise<void>((resolve, reject) => {
+          try {
+            const r = vm.runInContext(input, context);
+            context.result = context.result ? context.result : r;
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        }),
+        RuntimeTimeout,
+      ]);
+    } else {
+      await Promise.race([
+        new Promise<void>((res, reject) => {
+          try {
+            const code = fs.readFileSync(resolve("./data/", input), { encoding: "utf-8", flag: "r" });
+            const r = vm.runInContext(code, context);
+            context.result = context.result ? context.result : r;
+            res();
+          } catch (e) {
+            reject(e);
+          }
+        }),
+        RuntimeTimeout,
+      ]);
+    }
 
-  process.send!({ id: task.id, success: true, value: context.result } as TaskInfo);
+    process.send!({ id: task.id, success: true, value: context.result } as TaskInfo);
+  } catch (e) {
+    if (e instanceof Error && e.message === "Timeout!") {
+      process.send!({ id: task.id, success: false, value: context.result } as TaskInfo);
+    }
+  }
 });
