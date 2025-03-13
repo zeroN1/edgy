@@ -9,11 +9,28 @@ const db = new SqliteEngine();
 const workers: { [key: string]: ChildProcess } = {};
 let timer: NodeJS.Timeout;
 
-const msgHandler = (info: TaskInfo) => {
+const msgHandler = async (info: TaskInfo) => {
   const worker = workers[info.id];
   console.log(`Update on ${info.id}: Success: ${info.success ? "Yes" : "No"}`);
-  if (info.success) console.log("Result", info.value);
-  else console.error("Error", info.error);
+  if (info.success) {
+    console.log("Result", info.value);
+    const upRes = await db.update(info.id, { result: info.value, status: "successful" });
+    if (upRes.isErr()) {
+      console.error(upRes.error);
+    }
+  } else {
+    console.error("Error", info.error);
+    const tRes = await db.get(info.id);
+    if (tRes.isErr()) {
+      console.error(tRes.error);
+    } else {
+      const t = tRes.value;
+      const upRes = await db.update(info.id, { status: "failed", retries: (t as Task).retries++ });
+      if (upRes.isErr()) {
+        console.error(upRes.error);
+      }
+    }
+  }
 
   setTimeout(() => {
     console.log("Shutting down worker");

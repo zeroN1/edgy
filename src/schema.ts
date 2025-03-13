@@ -14,6 +14,7 @@ export const CreateTaskDtoSchema = zod.object({
   processed: zod.boolean().default(false),
   status: zod.enum(["successful", "failed", "todo"]).default("todo"),
   lastAttempted: zod.string().datetime().optional(),
+  result: zod.string().optional().default(""),
 });
 
 export type CreateTaskDto = {
@@ -30,4 +31,5 @@ export type Task = {
   processed: boolean;
   status: "successful" | "failed" | "todo";
   lastAttempted?: string;
+  result: string;
 } & CreateTaskDto;
