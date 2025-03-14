@@ -23,6 +23,7 @@ To setup the project:
 - Run `npm i` to install all dependencies
 - Run `npm run build` to build the project
 - Rum `npm run start` to start the project
+- Create directories /data and /db in the root directory before running the code
 
 Logs are found under `~/.pm2/logs/`
 
